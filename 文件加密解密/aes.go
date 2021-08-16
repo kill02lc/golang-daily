@@ -7,6 +7,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
+	"flag"
 	"fmt"
 	"math/rand"
 	"os"
@@ -95,7 +96,7 @@ func EncryptFile(filePath string, fName string) (err error) {
 		forNum = fLen / int64(maxLen)
 		fmt.Println("需要加密次数：", forNum+1)
 	}
-	ff, err := os.OpenFile("encryptFile_"+fName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	ff, err := os.OpenFile(fName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("文件写入错误")
 		return err
@@ -135,7 +136,7 @@ func DecryptFile(filePath, fName string) (err error) {
 	fmt.Println("待处理文件大小:", fInfo.Size())
 
 	br := bufio.NewReader(f)
-	ff, err := os.OpenFile("decryptFile_"+fName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+	ff, err := os.OpenFile(fName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println("文件写入错误")
 		return err
@@ -167,27 +168,31 @@ func CreateCaptcha() string {
 	return fmt.Sprintf("%06v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(1000000))
 }
 func main() {
-	var en_de_file int
+	var encrypt_file = flag.String("encrypt_file", "", "string类型参数")
+	var encrypt_out = flag.String("encrypt_out", "", "string类型参数")
+	var decrypt_file = flag.String("decrypt_file", "", "string类型参数")
+	var decrypt_out = flag.String("decrypt_out", "", "string类型参数")
+	flag.Parse()
+	fmt.Println("---- auth:kill02lc ----")
+	fmt.Println("-encrypt_file 要加密的文件路径", *encrypt_file)
+	fmt.Println("-encrypt_out 加密后的文件路径(无需后缀)", *encrypt_out)
+	fmt.Println("-decrypt_file 要解密的文件路径", *decrypt_file)
+	fmt.Println("-decrypt_out 解密后的文件路径(需要原文件的后缀)", *decrypt_out)
+	fmt.Println("\n")
+	fmt.Println("使用样例:")
+	fmt.Println(".\\aes_en_de.exe -encrypt_file test.txt -encrypt_out encrypt_123456")
+	fmt.Println(".\\aes_en_de.exe -decrypt_file encrypt_123456 -decrypt_out temp.txt")
 	startTime := time.Now()
-	message := `---- auth:kill02lc ----
-Encrypt or Decrypt(input id):
-1、Encrypt File 
-2、Decrypt File`
-	fmt.Println(message)
-	fmt.Scanln(&en_de_file)
-	if en_de_file == 1 {
-		var encr_file_name string
-		fmt.Println("input Encrypt File's filename:")
-		fmt.Scanln(&encr_file_name)
-		EncryptFile(encr_file_name, CreateCaptcha())
-	} else if en_de_file == 2 {
-		var decr_file_name string
-		var decr_file_out_name string
-		fmt.Println("input Decrypt File's filename:")
-		fmt.Scanln(&decr_file_name)
-		fmt.Println("input Decrypt out File's filename (must hava extension name):")
-		fmt.Scanln(&decr_file_out_name)
-		DecryptFile(decr_file_name, decr_file_out_name)
+	if len(*encrypt_file) != 0 && len(*encrypt_out) != 0 {
+		fmt.Println("\n")
+		EncryptFile(*encrypt_file, *encrypt_out)
+	} else if len(*decrypt_file) != 0 && len(*decrypt_out) != 0 {
+		fmt.Println("\n")
+		DecryptFile(*decrypt_file, *decrypt_out)
+	} else {
+		fmt.Println("\n")
+		fmt.Println("plase you input parameter!")
+		os.Exit(-1)
 	}
 	fmt.Printf("耗时：%v", time.Since(startTime))
 }
