@@ -191,7 +191,7 @@ func main() {
 		DecryptFile(*decrypt_file, *decrypt_out)
 	} else {
 		fmt.Println("\n")
-		fmt.Println("plase you input parameter!")
+		fmt.Println("plase input your parameter!")
 		os.Exit(-1)
 	}
 	fmt.Printf("耗时：%v", time.Since(startTime))
